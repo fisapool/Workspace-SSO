@@ -13,7 +13,17 @@ import logging
 import sys
 from typing import Dict, List, Any, Optional
 import tempfile
-from dotenv import load_dotenv
+
+# Try to import dotenv, but don't fail if it's not available
+try:
+    from dotenv import load_dotenv
+    # Try to load from .env file (for local development)
+    load_dotenv(os.path.join('config', '.env'))
+except ImportError:
+    # Define a dummy function if the module is not available
+    def load_dotenv(*args, **kwargs):
+        print("dotenv module not available, skipping .env file loading")
+        pass
 
 from database import init_db, add_default_services
 from email_verification_manager import EmailVerificationManager
@@ -24,9 +34,6 @@ print("Python version:", sys.version)
 print("Current working directory:", os.getcwd())
 print("Directory contents:", os.listdir())
 print("Environment variables:", {k: v for k, v in os.environ.items() if not k.startswith('AWS_')})
-
-# Try to load from .env file first (for local development)
-load_dotenv(os.path.join('config', '.env'))
 
 # If running on Streamlit Cloud, use secrets
 if not os.getenv("DATABASE_URL") and "DATABASE_URL" in st.secrets:
