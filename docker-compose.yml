@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8501:8501"
+    depends_on:
+      - postgres
+    volumes:
+      - ./credentials:/app/credentials
+    environment:
+      - ZEROBOUNCE_API_KEY=${ZEROBOUNCE_API_KEY}
+      - MAILBOXLAYER_API_KEY=${MAILBOXLAYER_API_KEY}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/service-account-key.json
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/email_verification
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=email_verification
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data: 
