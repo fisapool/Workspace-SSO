@@ -27,11 +27,20 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     print("WARNING: No DATABASE_URL found. Using SQLite as fallback.")
     # Create directory for SQLite database if it doesn't exist
-    os.makedirs("data", exist_ok=True)
-    DATABASE_URL = "sqlite:///data/ssointegration.db"
+    # Use current directory for Streamlit Cloud
+    os.makedirs("/mount/src/google-workspace-sso-integration-tools/data", exist_ok=True)
+    DATABASE_URL = "sqlite:////mount/src/google-workspace-sso-integration-tools/data/ssointegration.db"
 
 # Create SQLAlchemy engine
-engine = sqlalchemy.create_engine(DATABASE_URL, pool_pre_ping=True)
+try:
+    engine = sqlalchemy.create_engine(DATABASE_URL, pool_pre_ping=True)
+    print(f"Successfully connected to database: {DATABASE_URL}")
+except Exception as e:
+    print(f"Database connection error: {str(e)}")
+    # Absolute last resort fallback to in-memory SQLite
+    print("Falling back to in-memory SQLite database")
+    DATABASE_URL = "sqlite:///:memory:"
+    engine = sqlalchemy.create_engine(DATABASE_URL)
 
 # Add this after creating the engine but before the Base class definition
 SessionLocal = sqlalchemy.orm.sessionmaker(autocommit=False, autoflush=False, bind=engine)

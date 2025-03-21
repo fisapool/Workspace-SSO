@@ -10,6 +10,7 @@ import datetime
 import pandas as pd
 import streamlit as st
 import logging
+import sys
 from typing import Dict, List, Any, Optional
 import tempfile
 from dotenv import load_dotenv
@@ -17,6 +18,12 @@ from dotenv import load_dotenv
 from database import init_db, add_default_services
 from email_verification_manager import EmailVerificationManager
 from email_list_manager import EmailListManager
+
+# Debug information
+print("Python version:", sys.version)
+print("Current working directory:", os.getcwd())
+print("Directory contents:", os.listdir())
+print("Environment variables:", {k: v for k, v in os.environ.items() if not k.startswith('AWS_')})
 
 # Try to load from .env file first (for local development)
 load_dotenv(os.path.join('config', '.env'))
@@ -38,8 +45,13 @@ logging.basicConfig(
 )
 
 # Initialize database
-init_db()
-add_default_services()
+try:
+    init_db()
+    add_default_services()
+    print("Database initialization successful")
+except Exception as e:
+    print(f"Database initialization error: {str(e)}")
+    st.error(f"Database error: {str(e)}")
 
 # Initialize managers
 verification_manager = EmailVerificationManager()
